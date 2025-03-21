@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>WebGL</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: black; text-align: center; }
+        canvas { display: none; } /* 描画を隠す */
+    </style>
+</head>
+<body>
+    <script>
+        window.onload = function() {
+            // WebGLをすぐに開始
+            startWebGL();
+
+            function startWebGL() {
+                // シーン & カメラ
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.set(0, 10, 30);
+
+                // レンダラー (描画を隠す)
+                const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                document.body.appendChild(renderer.domElement);
+                renderer.domElement.style.display = "none"; // 描画を非表示
+
+                // 地面 (影計算)
+                const ground = new THREE.Mesh(
+                    new THREE.PlaneGeometry(100, 100),
+                    new THREE.ShadowMaterial({ opacity: 0.5 })
+                );
+                ground.rotation.x = -Math.PI / 2;
+                ground.receiveShadow = true;
+                scene.add(ground);
+
+                // ライト (最大解像度の影)
+                const light = new THREE.DirectionalLight(0xffffff, 1);
+                light.position.set(10, 20, 10);
+                light.castShadow = true;
+                light.shadow.mapSize.width = 50000000000;
+                light.shadow.mapSize.height = 500000000000;
+                scene.add(light);
+
+                // 高ポリゴンオブジェクト (1000個)
+                const objects = [];
+                const sphereGeo = new THREE.SphereGeometry(1, 128, 128);
+                const torusGeo = new THREE.TorusKnotGeometry(1, 0.3, 256, 64);
+                const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+
+                for (let i = 0; i < 1000; i++) {
+                    const mesh = new THREE.Mesh(i % 2 === 0 ? sphereGeo : torusGeo, material);
+                    mesh.position.set(Math.random() * 40 - 20, Math.random() * 10, Math.random() * 40 - 20);
+                    mesh.castShadow = true;
+                    scene.add(mesh);
+                    objects.push(mesh);
+                }
+
+                // アニメーション
+                function animate() {
+                    requestAnimationFrame(animate);
+                    objects.forEach((obj, index) => {
+                        obj.rotation.x += 0.02;
+                        obj.rotation.y += 0.02;
+                        obj.position.y += Math.sin(Date.now() * 0.001 + index) * 0.05;
+                    });
+                    renderer.render(scene, camera);
+                }
+                animate();
+            }
+        }
+    </script>
+</body>
+</html>
