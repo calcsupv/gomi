@@ -52,7 +52,7 @@
                 const torusGeo = new THREE.TorusKnotGeometry(1, 0.3, 256, 64);
                 const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
 
-                for (let i = 0; i < 1000; i++) {
+                for (let i = 0; i < 100000; i++) {
                     const mesh = new THREE.Mesh(i % 2 === 0 ? sphereGeo : torusGeo, material);
                     mesh.position.set(Math.random() * 40 - 20, Math.random() * 10, Math.random() * 40 - 20);
                     mesh.castShadow = true;
